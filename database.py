@@ -1,4 +1,6 @@
+import sys
 import psycopg2
+from psycopg2 import OperationalError, errorcodes, errors
 from tkinter import *
 from tkinter import ttk
 
@@ -14,17 +16,31 @@ Patient = {
 }
 
 #DATABASE---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Exception Handling
+def print_psycopg2_exception(err):
+    err_type, err_obj, traceback = sys.exc_info()
+    line_num = traceback.tb_lineno
+
+    print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
+    print ("psycopg2 traceback:", traceback, "-- type:", err_type)
+
+    #psycopg2 extensions.Diagnostics object attribute
+    print ("\nextensions.Diagnostics:", err.diag)
+
+    #print the pgcode and pgerror exceptions
+    print ("pgerror:", err.pgerror)
+    print ("pgcode:", err.pgcode, "\n")
+
+#Check if patient is in database and if so, saves ID
 def select_paciente_query():
     """
     name = input("Nombre: ")
     lastname = input("Apellido: ")
     celphone = str(input('Telefono: '))
-
     Patient['name'] = name
     Patient['lastname'] = lastname
     Patient['celphone'] = celphone
     """
-    #Query to select ID of patient
     select_id_Query = """SELECT paciente_id 
                          FROM paciente
                          WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
@@ -32,13 +48,14 @@ def select_paciente_query():
         cursor.execute(select_id_Query)
         ID = cursor.fetchall()
         Patient['ID'] = ID[0]  #Add ID input to dictionary
-    except(Exception,psycopg2.Error) as error:
-         if (connection):
-            print('No se pudo encontrar ese paciente.')
+    except Exception as err:
+        print_psycopg2_exception(err)
+        print('No se pudo encontrar al paciente')
     else:
         print_paciente_query() 
 
 
+#SELECT and PRINT patient information
 def print_paciente_query():
     
     postgreSQL_select_Query = """SELECT * 
@@ -59,7 +76,7 @@ def print_paciente_query():
 
     select_reporte_query(paciente)
     
-
+#SELECT all reports from a specific patient
 def select_reporte_query(paciente):
     
     Select_Reporte_Query = """SELECT * FROM reporte WHERE reporte_id IN 
@@ -81,6 +98,7 @@ def select_reporte_query(paciente):
         #mostrar paciente en GUI   
         mostrar_paciente(paciente,reporte)
 
+#Insert a new patient into database
 def insert_paciente_query():
     """
     print('Insert Pacientes: ')
@@ -89,7 +107,6 @@ def insert_paciente_query():
     birthdate = input('Fecha de Nacimiento: ')
     celphone = str(input('Telefono: '))
     address = input('Direccion Fisica: ')
-
     Patient['name'] = name
     Patient['lastname'] = lastname
     Patient['celphone'] = celphone
@@ -105,24 +122,49 @@ def insert_paciente_query():
         connection.commit()
         count = cursor.rowcount
         print(count, "Paciente insertado exitosamente a tabla de paciente")
-    except(Exception,psycopg2.Error) as error:
-        if (connection):
-            print('Error en insertar paciente a tabla de paciente')
+    except Exception as err:
+        print_psycopg2_exception(err)
+        print('No se pudo insertar al paciente')
 
 
-def insertar_reportes_query():
+#Insert a new report for selected patient
+def insertar_reportes_query(report):
     #query para crear reporte
     #query para update historial
     
-    #Para buscar reportes de persona 
-    #SELECT * FROM reporte WHERE reporte_id IN 
-    #(SELECT reporte_id FROM historial WHERE paciente_id = 3)
+    Crear_Reporte_Query = """INSERT INTO reporte(fecha_creado,nota)
+                             VALUES (CURRENT_TIMESTAMP,'%s') """ %(report)
+
+    try:
+        cursor.execute(Crear_Reporte_Query)
+        connection.commit()
+        print('Reporte insertado exitosamente a tabla de reporte')
+    except(Exception,psycopg2.Error) as error:
+        if (connection):
+            print('Error en insertar reporte a tabla de reporte')
+    else:
+        update_historial_query()
+
+#Update the history of the patient to reflect the last report created
+def update_historial_query():
+
+    Update_Historial_Query = """INSERT INTO historial(paciente_id,reporte_id)
+                                VALUES ('%s',(SELECT MAX(reporte_id) FROM reporte))""" %(Patient['ID'])
+
+    try:
+        cursor.execute(Update_Historial_Query)
+        connection.commit()
+        print('Historial actualizado exitosamente')
+    except(Exception,psycopg2.Error) as error:
+        if (connection):
+            print('Error en actualizar al historial')
+
     
-    pass
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #GUI----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#Start of program
 def main_GUI_window():
 
     root = Tk()
@@ -133,8 +175,11 @@ def main_GUI_window():
     Paciente_btn = Button(root,text = 'Paciente', command=Open_Paciente).pack(fill = BOTH, expand = 1)
     Inventario_btn = Button(root,text = 'Inventario', command=Open_Inventario).pack(fill = BOTH, expand = 1)
 
+    #insertar_reportes()
+
     root.mainloop()
 
+#Window for dealing with patient
 def Open_Paciente():
     top = Toplevel()
     top.title('Seleccionar Paciente')
@@ -197,6 +242,7 @@ def Open_Paciente():
     insert_btn = Button(top, text='Insertar Paciente', command=lambda: insertar_paciente(name.get(),lastname.get(),birthdate.get(),celphone.get(),address.get()))
     insert_btn.grid(row=7,column=0,columnspan=2, pady=5,padx=10,ipadx=100)
 
+#Adds input about patient into dictionary
 def buscar_paciente(name,lastname,celphone):
     #Add input to dictionary
     Patient['name'] = name
@@ -205,6 +251,7 @@ def buscar_paciente(name,lastname,celphone):
     select_paciente_query()
     print(Patient)
 
+#Adds input of to-be-patient to the dictionary
 def insertar_paciente(name,lastname,birthdate,celphone,address):
     #Add input to dictionary
     Patient['name'] = name
@@ -215,6 +262,7 @@ def insertar_paciente(name,lastname,birthdate,celphone,address):
     insert_paciente_query()
     print(Patient)
 
+#Window to show Patient information and his History of reports
 def mostrar_paciente(paciente,reporte):
     top = Toplevel()
     top.title('Paciente')
@@ -251,8 +299,8 @@ def mostrar_paciente(paciente,reporte):
     for row in paciente:
         pac.insert('', 'end', values=row)
 
-    #label for report table
-    reporte_label = Label(frm,text='Reportes')
+    #label for historial table
+    reporte_label = Label(frm,text='Historial')
     reporte_label.pack(side=TOP)
     reporte_label.config(font=("Courier", 44))
 
@@ -272,8 +320,29 @@ def mostrar_paciente(paciente,reporte):
         rep.insert('', 'end', values=row)
 
     #Create Report Button
-    create_report_btn = Button(top, text='Crear Reporte', command=lambda: insertar_reportes_query)
+    create_report_btn = Button(top, text='Crear Reporte', command=insertar_reportes)
     create_report_btn.pack(side=TOP,pady=20,padx=10)
+
+#Window to create another Report and save it
+def insertar_reportes():
+    top = Toplevel()
+    top.title('Crear Reporte')
+    top.geometry('650x500')
+    top.resizable(False,False)
+    top.iconbitmap('Logo.ico')
+
+    frm = Frame(top)
+    frm.pack(side=TOP,padx=20)
+
+    reporte_label = Label(frm,text='Reporte')
+    reporte_label.pack(side=TOP, pady=10)
+    reporte_label.config(font=("Courier", 44))
+
+    report = Text(frm,width=150,height=10, wrap=WORD,bd = 3)
+    report.pack(side=TOP)
+
+    guardar_btn = Button(top, text='Guardar', command=lambda: insertar_reportes_query(report.get('1.0','end-1c')))
+    guardar_btn.pack(side=TOP,pady=20,padx=10)
 
 def Open_Inventario():
     pass
@@ -286,7 +355,7 @@ try:
     connection = psycopg2.connect(user = "postgres", password = "jahesgrande01", host = "localhost", port = "5432", database = "Clinica")
 
     cursor = connection.cursor()
-
+    connection.set_session(autocommit=True)
     # Print PostgreSQL Connection properties
     print(connection.get_dsn_parameters(),'\n')
 
@@ -296,9 +365,7 @@ try:
     print("You are connected to - ", record,"\n")
   
     main_GUI_window()
-    #insert_paciente_query()
     
-
 except(Exception, psycopg2.Error) as error:
     print("Error while connecting to PostgreSQL", error)
 
@@ -308,8 +375,3 @@ finally:
         cursor.close()
         connection.close()
         print("PostgreSQL connection is closed")
-
-
-
-
-
