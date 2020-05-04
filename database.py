@@ -33,14 +33,7 @@ def print_psycopg2_exception(err):
 
 #Check if patient is in database and if so, saves ID
 def select_paciente_query():
-    """
-    name = input("Nombre: ")
-    lastname = input("Apellido: ")
-    celphone = str(input('Telefono: '))
-    Patient['name'] = name
-    Patient['lastname'] = lastname
-    Patient['celphone'] = celphone
-    """
+
     select_id_Query = """SELECT paciente_id 
                          FROM paciente
                          WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
@@ -58,10 +51,10 @@ def select_paciente_query():
 #SELECT and PRINT patient information
 def print_paciente_query():
     
-    postgreSQL_select_Query = """SELECT * 
+    Select_Paciente_Query = """SELECT * 
                                  FROM paciente
                                  WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
-    cursor.execute(postgreSQL_select_Query)
+    cursor.execute(Select_Paciente_Query)
     paciente = cursor.fetchall()
 
     print("Paciente: ")
@@ -100,19 +93,7 @@ def select_reporte_query(paciente):
 
 #Insert a new patient into database
 def insert_paciente_query():
-    """
-    print('Insert Pacientes: ')
-    name = input("Nombre: ")
-    lastname = input("Apellido: ")
-    birthdate = input('Fecha de Nacimiento: ')
-    celphone = str(input('Telefono: '))
-    address = input('Direccion Fisica: ')
-    Patient['name'] = name
-    Patient['lastname'] = lastname
-    Patient['celphone'] = celphone
-    Patient['birthdate'] = birthdate
-    Patient['address'] = address
-    """
+   
     Insert_Paciente_Query = """INSERT INTO paciente(nombre,apellido,fecha_nacimiento,telefono,direccion)
                                VALUES
                                ('%s', '%s', '%s', '%s', '%s')""" %(Patient['name'],Patient['lastname'],Patient['birthdate'],Patient['celphone'],Patient['address'])
@@ -159,7 +140,48 @@ def update_historial_query():
         if (connection):
             print('Error en actualizar al historial')
 
+def select_inventario_query():
     
+    Select_Inventario_Query = '''SELECT articulo,cantidad FROM inventario
+                                 ORDER BY inventario_id'''
+
+    try:
+        cursor.execute(Select_Inventario_Query)
+        inventario = cursor.fetchall()
+    except Exception as err:
+        print_psycopg2_exception(err)
+        print('No se pudo encontrar el inventario')
+    else:
+        return inventario
+    
+def modify_inventory_query(articulo, cantidad_sumar,modify):
+    
+    AddToInventory_query = '''UPDATE inventario
+                              SET cantidad = cantidad + '%s'
+                              WHERE articulo = '%s' ''' %(cantidad_sumar,articulo)
+    SubToInventory_query = '''UPDATE inventario
+                              SET cantidad = cantidad - '%s'
+                              WHERE articulo = '%s' ''' %(cantidad_sumar,articulo)
+    
+    try:
+        if(modify == 'sumar'):
+            cursor.execute(AddToInventory_query)
+            print('%s %s añadidos al inventario'%(cantidad_sumar,articulo)) 
+        elif(modify=='restar'):
+            cursor.execute(SubToInventory_query)
+            print('%s %s restados al inventario'%(cantidad_sumar,articulo)) 
+        connection.commit()
+    except Exception as err:
+        print_psycopg2_exception(err)
+        if(modify == 'sumar'):
+            print('No se pudo añadir al inventario')
+        elif(modify=='restar'):
+            print('No se pudo restar al inventario')
+
+
+        
+
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #GUI----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -345,7 +367,64 @@ def insertar_reportes():
     guardar_btn.pack(side=TOP,pady=20,padx=10)
 
 def Open_Inventario():
-    pass
+    top = Toplevel()
+    top.title('Inventario')
+    top.geometry('650x500')
+    top.resizable(False,False)
+    top.iconbitmap('Logo.ico')
+
+    frm = Frame(top)
+    frm.pack(side=TOP,padx=20)
+
+    #Label for inventory table
+    paciente_label = Label(frm,text='Inventario')
+    paciente_label.pack(side=TOP)
+    paciente_label.config(font=("Courier", 44))
+
+    #Table por inventory
+    pac = ttk.Treeview(frm,columns=(1,2,),show='headings',height='4')
+    pac.pack(side=TOP,fill=X)
+    
+    pac.column(1,width=80,minwidth=50)
+    pac.column(2,width=80,minwidth=50)
+    
+    pac.heading(1,text='Articulo',anchor=W)
+    pac.heading(2,text='Cantidad',anchor=W)
+
+    def refresh_table():
+        pac.delete(*pac.get_children())
+        inventario = select_inventario_query()
+        for row in inventario:
+            pac.insert('', 'end', values=row)
+    
+    refresh_table()
+
+    #Labels
+    articulo_label = Label(top,text='Articulo')
+    articulo_label.place(relx=0.3,rely=0.5,anchor=CENTER)
+    cantidad_label = Label(top,text='Cantidad')
+    cantidad_label.place(relx=0.3,rely=0.6,anchor=CENTER)
+
+
+    #Entry for amount of increment or decrement
+    mod_entry = Entry(top,width=5)
+    mod_entry.place(relx=0.385,rely=0.6,anchor=CENTER)
+
+    mi_articulo = StringVar()
+    articulos = ttk.Combobox(top, width=27, textvariable = mi_articulo)
+    articulos['values'] = ('Tape Bandas','Desinfectantes','Facepapers','Biofreeze')
+    articulos.place(relx=0.5,rely=0.5,anchor=CENTER)
+    articulos.current()
+
+    add_button = Button(top, text='Añadir', command=lambda: [modify_inventory_query(mi_articulo.get(), mod_entry.get(),'sumar'),refresh_table()])
+    add_button.place(relx=0.7,rely=0.5,anchor=CENTER)
+    restar_button = Button(top, text='Quitar', command=lambda: [modify_inventory_query(mi_articulo.get(), mod_entry.get(),'restar'),refresh_table()])
+    restar_button.place(relx=0.7,rely=0.6,anchor=CENTER)
+
+    
+
+
+    
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
