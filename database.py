@@ -15,173 +15,184 @@ Patient = {
     'address': ''
 }
 
-#DATABASE---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Exception Handling
-def print_psycopg2_exception(err):
-    err_type, err_obj, traceback = sys.exc_info()
-    line_num = traceback.tb_lineno
+class Database:
+    def __init__(self):
+        try:
+            self.connection = psycopg2.connect(user = "postgres", password = "jahesgrande01", host = "localhost", port = "5432", database = "Clinica")
+            self.cursor = self.connection.cursor()
+            self.connection.set_session(autocommit=True)
+            print(self.connection.get_dsn_parameters(),'\n')
 
-    print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
-    print ("psycopg2 traceback:", traceback, "-- type:", err_type)
+            # Print PostgreSQL version
+            self.cursor.execute("SELECT version();")
+            record = self.cursor.fetchone()
+            print("You are connected to - ", record,"\n")
+        except(Exception, psycopg2.Error) as error:
+            print("Error while connecting to PostgreSQL", error)
 
-    #psycopg2 extensions.Diagnostics object attribute
-    print ("\nextensions.Diagnostics:", err.diag)
-
-    #print the pgcode and pgerror exceptions
-    print ("pgerror:", err.pgerror)
-    print ("pgcode:", err.pgcode, "\n")
-
-#Check if patient is in database and if so, saves ID
-def select_paciente_query(name, lastname,celphone):
-
-    Patient['name'] = name
-    Patient['lastname'] = lastname
-    Patient['celphone'] = celphone
-
-    select_id_Query = """SELECT *
-                         FROM paciente
-                         WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
-    try:
-        cursor.execute(select_id_Query)
-        paciente = cursor.fetchall()
-    except Exception as err:
-        print_psycopg2_exception(err)
-        print('No se pudo encontrar al paciente')
-    else:
-       for row in paciente:
-            Patient['ID'] = row[0]
-            print("paciente_id = ", row[0])
-            print("nombre = ", row[1])
-            print("apellido  = ", row[2])
-            print("fecha_nacimiento  = ", row[3])
-            print("telefono  = ", row[4])
-            print("direccion = ", row[5], "\n")
-
-       print(Patient)
-       select_reporte_query(paciente)
-
-
-#SELECT all reports from a specific patient
-def select_reporte_query(paciente):
     
-    Select_Reporte_Query = """SELECT * FROM reporte WHERE reporte_id IN 
-                             (SELECT reporte_id FROM historial WHERE paciente_id = %s)""" %(Patient['ID'])
-    try:
-        cursor.execute(Select_Reporte_Query)
-        reporte = cursor.fetchall()
-    except(Exception,psycopg2.Error) as error:
-        if (connection):
-            print('No se pudo encontrar los reportes del paciente')
-    else:
+    def print_psycopg2_exception(self,err): #Exception Handling
+            self.err_type, self.err_obj, self.traceback = sys.exc_info()
+            line_num = self.traceback.tb_lineno
 
-        print("Reporte: ")
-        for row in reporte:
-            print('reporte_id = ', row[0])
-            print('fecha_creado = ', row[1])
-            print('nota = ', row[2], '\n')
+            print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
+            print ("psycopg2 traceback:", self.traceback, "-- type:", self.err_type)
 
-        #mostrar paciente en GUI   
-        mostrar_paciente(paciente,reporte)
+            #psycopg2 extensions.Diagnostics object attribute
+            print ("\nextensions.Diagnostics:", err.diag)
 
-#Insert a new patient into database
-def insert_paciente_query(name,lastname,birthdate,celphone,address):
-   
-    Patient['name'] = name
-    Patient['lastname'] = lastname
-    Patient['celphone'] = celphone
-    Patient['birthdate'] = birthdate
-    Patient['address'] = address
-    print(Patient)
+            #print the pgcode and pgerror exceptions
+            print ("pgerror:", err.pgerror)
+            print ("pgcode:", err.pgcode, "\n")
 
-    Insert_Paciente_Query = """INSERT INTO paciente(nombre,apellido,fecha_nacimiento,telefono,direccion)
-                               VALUES
-                               ('%s', '%s', '%s', '%s', '%s')""" %(Patient['name'],Patient['lastname'],Patient['birthdate'],Patient['celphone'],Patient['address'])
+
+    def select_paciente_query(self, name, lastname,celphone):
+
+        Patient['name'] = name
+        Patient['lastname'] = lastname
+        Patient['celphone'] = celphone
+
+        select_id_Query = """SELECT *
+                            FROM paciente
+                            WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
+        try:
+            self.cursor.execute(select_id_Query)
+            paciente = self.cursor.fetchall()
+        except Exception as err:
+            self.print_psycopg2_exception(err)
+            print('No se pudo encontrar al paciente')
+        else:
+            for row in paciente:
+                    Patient['ID'] = row[0]
+                    print("paciente_id = ", row[0])
+                    print("nombre = ", row[1])
+                    print("apellido  = ", row[2])
+                    print("fecha_nacimiento  = ", row[3])
+                    print("telefono  = ", row[4])
+                    print("direccion = ", row[5], "\n")
+
+        print(Patient)
+        self.select_reporte_query(paciente)
     
-    try:
-        cursor.execute(Insert_Paciente_Query)
-        connection.commit()
-        count = cursor.rowcount
-        print(count, "Paciente insertado exitosamente a tabla de paciente")
-    except Exception as err:
-        print_psycopg2_exception(err)
-        print('No se pudo insertar al paciente')
 
-
-#Insert a new report for selected patient
-def insertar_reportes_query(report):
-    #query para crear reporte
-    #query para update historial
-    
-    Crear_Reporte_Query = """INSERT INTO reporte(fecha_creado,nota)
-                             VALUES (CURRENT_TIMESTAMP,'%s') """ %(report)
-
-    try:
-        cursor.execute(Crear_Reporte_Query)
-        connection.commit()
-        print('Reporte insertado exitosamente a tabla de reporte')
-    except(Exception,psycopg2.Error) as error:
-        if (connection):
-            print('Error en insertar reporte a tabla de reporte')
-    else:
-        update_historial_query()
-
-#Update the history of the patient to reflect the last report created
-def update_historial_query():
-
-    Update_Historial_Query = """INSERT INTO historial(paciente_id,reporte_id)
-                                VALUES ('%s',(SELECT MAX(reporte_id) FROM reporte))""" %(Patient['ID'])
-
-    try:
-        cursor.execute(Update_Historial_Query)
-        connection.commit()
-        print('Historial actualizado exitosamente')
-    except(Exception,psycopg2.Error) as error:
-        if (connection):
-            print('Error en actualizar al historial')
-
-def select_inventario_query():
-    
-    Select_Inventario_Query = '''SELECT articulo,cantidad FROM inventario
-                                 ORDER BY inventario_id'''
-
-    try:
-        cursor.execute(Select_Inventario_Query)
-        inventario = cursor.fetchall()
-    except Exception as err:
-        print_psycopg2_exception(err)
-        print('No se pudo encontrar el inventario')
-    else:
-        return inventario
-    
-def modify_inventory_query(articulo, cantidad_sumar,modify):
-    
-    AddToInventory_query = '''UPDATE inventario
-                              SET cantidad = cantidad + '%s'
-                              WHERE articulo = '%s' ''' %(cantidad_sumar,articulo)
-    SubToInventory_query = '''UPDATE inventario
-                              SET cantidad = cantidad - '%s'
-                              WHERE articulo = '%s' ''' %(cantidad_sumar,articulo)
-    
-    try:
-        if(modify == 'sumar'):
-            cursor.execute(AddToInventory_query)
-            print('%s %s añadidos al inventario'%(cantidad_sumar,articulo)) 
-        elif(modify=='restar'):
-            cursor.execute(SubToInventory_query)
-            print('%s %s restados al inventario'%(cantidad_sumar,articulo)) 
-        connection.commit()
-    except Exception as err:
-        print_psycopg2_exception(err)
-        if(modify == 'sumar'):
-            print('No se pudo añadir al inventario')
-        elif(modify=='restar'):
-            print('No se pudo restar al inventario')
-
-
+    def select_reporte_query(self,paciente): #SELECT all reports from a specific patient
         
+        Select_Reporte_Query = """SELECT * FROM reporte WHERE reporte_id IN 
+                                (SELECT reporte_id FROM historial WHERE paciente_id = %s)""" %(Patient['ID'])
+        try:
+            self.cursor.execute(Select_Reporte_Query)
+            reporte = self.cursor.fetchall()
+        except Exception as err:
+            self.print_psycopg2_exception(err)
+            print('No se pudo encontrar los reportes del paciente')
+        else:
+            print("Reporte: ")
+            for row in reporte:
+                print('reporte_id = ', row[0])
+                print('fecha_creado = ', row[1])
+                print('nota = ', row[2], '\n')
+
+            mostrar_paciente(paciente,reporte) #mostrar paciente en GUI   
+    
+
+    def insert_paciente_query(self,name,lastname,birthdate,celphone,address): #Insert a new patient into database
+   
+        Patient['name'] = name
+        Patient['lastname'] = lastname
+        Patient['celphone'] = celphone
+        Patient['birthdate'] = birthdate
+        Patient['address'] = address
+        print(Patient)
+
+        Insert_Paciente_Query = """INSERT INTO paciente(nombre,apellido,fecha_nacimiento,telefono,direccion)
+                                VALUES
+                                ('%s', '%s', '%s', '%s', '%s')""" %(Patient['name'],Patient['lastname'],Patient['birthdate'],Patient['celphone'],Patient['address'])
+    
+        try:
+            self.cursor.execute(Insert_Paciente_Query)
+            self.connection.commit()
+            count = self.cursor.rowcount
+            print(count, "Paciente insertado exitosamente a tabla de paciente")
+        except Exception as err:
+            self.print_psycopg2_exception(err)
+            print('No se pudo insertar al paciente')
+    
+
+    
+    def insertar_reportes_query(self,report): #Insert a new report for selected patient
+        
+        Crear_Reporte_Query = """INSERT INTO reporte(fecha_creado,nota)
+                                VALUES (CURRENT_TIMESTAMP,'%s') """ %(report)
+        try:
+            self.cursor.execute(Crear_Reporte_Query)
+            self.connection.commit()
+            print('Reporte insertado exitosamente a tabla de reporte')
+        except(Exception,psycopg2.Error) as error:
+            if (self.connection):
+                print('Error en insertar reporte a tabla de reporte')
+        else:
+            self.update_historial_query()
+    
+    
+    def update_historial_query(self):  #Update the history of the patient to reflect the last report created
+
+        Update_Historial_Query = """INSERT INTO historial(paciente_id,reporte_id)
+                                    VALUES ('%s',(SELECT MAX(reporte_id) FROM reporte))""" %(Patient['ID'])
+        try:
+            self.cursor.execute(Update_Historial_Query)
+            self.connection.commit()
+            print('Historial actualizado exitosamente')
+        except(Exception,psycopg2.Error) as error:
+            if (self.connection):
+                print('Error en actualizar al historial')
+
+    
+    def select_inventario_query(self):
+    
+        Select_Inventario_Query = '''SELECT articulo,cantidad FROM inventario
+                                    ORDER BY inventario_id'''
+        try:
+            self.cursor.execute(Select_Inventario_Query)
+            inventario = self.cursor.fetchall()
+        except Exception as err:
+            self.print_psycopg2_exception(err)
+            print('No se pudo encontrar el inventario')
+        else:
+            return inventario
+
+    def modify_inventory_query(self,articulo, cantidad_sumar,modify):
+    
+        AddToInventory_query = '''UPDATE inventario
+                                SET cantidad = cantidad + '%s'
+                                WHERE articulo = '%s' ''' %(cantidad_sumar,articulo)
+        SubToInventory_query = '''UPDATE inventario
+                                SET cantidad = cantidad - '%s'
+                                WHERE articulo = '%s' ''' %(cantidad_sumar,articulo)
+        
+        try:
+            if(modify == 'sumar'):
+                self.cursor.execute(AddToInventory_query)
+                print('%s %s añadidos al inventario'%(cantidad_sumar,articulo)) 
+            elif(modify=='restar'):
+                self.cursor.execute(SubToInventory_query)
+                print('%s %s restados al inventario'%(cantidad_sumar,articulo)) 
+            self.connection.commit()
+        except Exception as err:
+            self.print_psycopg2_exception(err)
+            if(modify == 'sumar'):
+                print('No se pudo añadir al inventario')
+            elif(modify=='restar'):
+                print('No se pudo restar al inventario')
 
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    def __del__(self):
+        if(self.connection):
+            self.cursor.close()
+            self.connection.close()
+            print("PostgreSQL connection is closed")
+    
+database = Database()
+
 
 #GUI----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -256,11 +267,11 @@ def Open_Paciente():
     address_label = Label(top,text='Direccion Fisica').grid(row=4, column=0)
 
     #search button
-    search_btn = Button(top, text='Buscar Paciente', command=lambda: select_paciente_query(name.get(),lastname.get(),celphone.get()))
+    search_btn = Button(top, text='Buscar Paciente', command=lambda: database.select_paciente_query(name.get(),lastname.get(),celphone.get()))
     search_btn.grid(row=6,column=0,columnspan=2, pady=10,padx=10,ipadx=100)
 
     #insert button
-    insert_btn = Button(top, text='Insertar Paciente', command=lambda: insert_paciente_query(name.get(),lastname.get(),birthdate.get(),celphone.get(),address.get()))
+    insert_btn = Button(top, text='Insertar Paciente', command=lambda: database.insert_paciente_query(name.get(),lastname.get(),birthdate.get(),celphone.get(),address.get()))
     insert_btn.grid(row=7,column=0,columnspan=2, pady=5,padx=10,ipadx=100)
 
 
@@ -343,7 +354,7 @@ def insertar_reportes():
     report = Text(frm,width=150,height=10, wrap=WORD,bd = 3)
     report.pack(side=TOP)
 
-    guardar_btn = Button(top, text='Guardar', command=lambda: insertar_reportes_query(report.get('1.0','end-1c')))
+    guardar_btn = Button(top, text='Guardar', command=lambda: database.insertar_reportes_query(report.get('1.0','end-1c')))
     guardar_btn.pack(side=TOP,pady=20,padx=10)
 
 def Open_Inventario():
@@ -373,7 +384,7 @@ def Open_Inventario():
 
     def refresh_table():
         pac.delete(*pac.get_children())
-        inventario = select_inventario_query()
+        inventario = database.select_inventario_query()
         for row in inventario:
             pac.insert('', 'end', values=row)
     
@@ -396,9 +407,9 @@ def Open_Inventario():
     articulos.place(relx=0.5,rely=0.5,anchor=CENTER)
     articulos.current()
 
-    add_button = Button(top, text='Añadir', command=lambda: [modify_inventory_query(mi_articulo.get(), mod_entry.get(),'sumar'),refresh_table()])
+    add_button = Button(top, text='Añadir', command=lambda: [database.modify_inventory_query(mi_articulo.get(), mod_entry.get(),'sumar'),refresh_table()])
     add_button.place(relx=0.7,rely=0.5,anchor=CENTER)
-    restar_button = Button(top, text='Quitar', command=lambda: [modify_inventory_query(mi_articulo.get(), mod_entry.get(),'restar'),refresh_table()])
+    restar_button = Button(top, text='Quitar', command=lambda: [database.modify_inventory_query(mi_articulo.get(), mod_entry.get(),'restar'),refresh_table()])
     restar_button.place(relx=0.7,rely=0.6,anchor=CENTER)
 
     
@@ -408,29 +419,6 @@ def Open_Inventario():
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-#MAIN
-
-try:
-    connection = psycopg2.connect(user = "postgres", password = "jahesgrande01", host = "localhost", port = "5432", database = "Clinica")
-
-    cursor = connection.cursor()
-    connection.set_session(autocommit=True)
-    # Print PostgreSQL Connection properties
-    print(connection.get_dsn_parameters(),'\n')
-
-    # Print PostgreSQL version
-    cursor.execute("SELECT version();")
-    record = cursor.fetchone()
-    print("You are connected to - ", record,"\n")
-  
+if __name__ == "__main__": #main loop
     main_GUI_window()
     
-except(Exception, psycopg2.Error) as error:
-    print("Error while connecting to PostgreSQL", error)
-
-finally:
-    #closing database connection
-    if(connection):
-        cursor.close()
-        connection.close()
-        print("PostgreSQL connection is closed")
