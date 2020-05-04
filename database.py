@@ -32,43 +32,35 @@ def print_psycopg2_exception(err):
     print ("pgcode:", err.pgcode, "\n")
 
 #Check if patient is in database and if so, saves ID
-def select_paciente_query():
+def select_paciente_query(name, lastname,celphone):
 
-    select_id_Query = """SELECT paciente_id 
+    Patient['name'] = name
+    Patient['lastname'] = lastname
+    Patient['celphone'] = celphone
+
+    select_id_Query = """SELECT *
                          FROM paciente
                          WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
     try:
         cursor.execute(select_id_Query)
-        ID = cursor.fetchall()
-        Patient['ID'] = ID[0]  #Add ID input to dictionary
+        paciente = cursor.fetchall()
     except Exception as err:
         print_psycopg2_exception(err)
         print('No se pudo encontrar al paciente')
     else:
-        print_paciente_query() 
+       for row in paciente:
+            Patient['ID'] = row[0]
+            print("paciente_id = ", row[0])
+            print("nombre = ", row[1])
+            print("apellido  = ", row[2])
+            print("fecha_nacimiento  = ", row[3])
+            print("telefono  = ", row[4])
+            print("direccion = ", row[5], "\n")
+
+       print(Patient)
+       select_reporte_query(paciente)
 
 
-#SELECT and PRINT patient information
-def print_paciente_query():
-    
-    Select_Paciente_Query = """SELECT * 
-                                 FROM paciente
-                                 WHERE nombre = '%s' AND apellido = '%s' AND telefono = '%s'""" %(Patient['name'], Patient['lastname'], Patient['celphone'])
-    cursor.execute(Select_Paciente_Query)
-    paciente = cursor.fetchall()
-
-    print("Paciente: ")
-    for row in paciente:
-       print("paciente_id = ", row[0])
-       print("nombre = ", row[1])
-       print("apellido  = ", row[2])
-       print("fecha_nacimiento  = ", row[3])
-       print("telefono  = ", row[4])
-       print("direccion = ", row[5], "\n")
-
-
-    select_reporte_query(paciente)
-    
 #SELECT all reports from a specific patient
 def select_reporte_query(paciente):
     
@@ -92,8 +84,15 @@ def select_reporte_query(paciente):
         mostrar_paciente(paciente,reporte)
 
 #Insert a new patient into database
-def insert_paciente_query():
+def insert_paciente_query(name,lastname,birthdate,celphone,address):
    
+    Patient['name'] = name
+    Patient['lastname'] = lastname
+    Patient['celphone'] = celphone
+    Patient['birthdate'] = birthdate
+    Patient['address'] = address
+    print(Patient)
+
     Insert_Paciente_Query = """INSERT INTO paciente(nombre,apellido,fecha_nacimiento,telefono,direccion)
                                VALUES
                                ('%s', '%s', '%s', '%s', '%s')""" %(Patient['name'],Patient['lastname'],Patient['birthdate'],Patient['celphone'],Patient['address'])
@@ -257,32 +256,13 @@ def Open_Paciente():
     address_label = Label(top,text='Direccion Fisica').grid(row=4, column=0)
 
     #search button
-    search_btn = Button(top, text='Buscar Paciente', command=lambda: buscar_paciente(name.get(),lastname.get(),celphone.get()))
+    search_btn = Button(top, text='Buscar Paciente', command=lambda: select_paciente_query(name.get(),lastname.get(),celphone.get()))
     search_btn.grid(row=6,column=0,columnspan=2, pady=10,padx=10,ipadx=100)
 
     #insert button
-    insert_btn = Button(top, text='Insertar Paciente', command=lambda: insertar_paciente(name.get(),lastname.get(),birthdate.get(),celphone.get(),address.get()))
+    insert_btn = Button(top, text='Insertar Paciente', command=lambda: insert_paciente_query(name.get(),lastname.get(),birthdate.get(),celphone.get(),address.get()))
     insert_btn.grid(row=7,column=0,columnspan=2, pady=5,padx=10,ipadx=100)
 
-#Adds input about patient into dictionary
-def buscar_paciente(name,lastname,celphone):
-    #Add input to dictionary
-    Patient['name'] = name
-    Patient['lastname'] = lastname
-    Patient['celphone'] = celphone
-    select_paciente_query()
-    print(Patient)
-
-#Adds input of to-be-patient to the dictionary
-def insertar_paciente(name,lastname,birthdate,celphone,address):
-    #Add input to dictionary
-    Patient['name'] = name
-    Patient['lastname'] = lastname
-    Patient['celphone'] = celphone
-    Patient['birthdate'] = birthdate
-    Patient['address'] = address
-    insert_paciente_query()
-    print(Patient)
 
 #Window to show Patient information and his History of reports
 def mostrar_paciente(paciente,reporte):
@@ -386,7 +366,7 @@ def Open_Inventario():
     pac.pack(side=TOP,fill=X)
     
     pac.column(1,width=80,minwidth=50)
-    pac.column(2,width=80,minwidth=50)
+    pac.column(2,width=50,minwidth=30)
     
     pac.heading(1,text='Articulo',anchor=W)
     pac.heading(2,text='Cantidad',anchor=W)
