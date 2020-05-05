@@ -72,10 +72,11 @@ class Database:
                     print("direccion = ", row[5], "\n")
 
         print(Patient)
-        self.select_reporte_query(paciente)
+        reportes = self.select_reporte_query()
+        return paciente,reportes
     
 
-    def select_reporte_query(self,paciente): #SELECT all reports from a specific patient
+    def select_reporte_query(self): #SELECT all reports from a specific patient
         
         Select_Reporte_Query = """SELECT * FROM reporte WHERE reporte_id IN 
                                 (SELECT reporte_id FROM historial WHERE paciente_id = %s)""" %(Patient['ID'])
@@ -92,7 +93,7 @@ class Database:
                 print('fecha_creado = ', row[1])
                 print('nota = ', row[2], '\n')
 
-            mostrar_paciente(paciente,reporte) #mostrar paciente en GUI   
+            return reporte  
     
 
     def insert_paciente_query(self,name,lastname,birthdate,celphone,address): #Insert a new patient into database
@@ -267,7 +268,7 @@ def Open_Paciente():
     address_label = Label(top,text='Direccion Fisica').grid(row=4, column=0)
 
     #search button
-    search_btn = Button(top, text='Buscar Paciente', command=lambda: database.select_paciente_query(name.get(),lastname.get(),celphone.get()))
+    search_btn = Button(top, text='Buscar Paciente', command=lambda: mostrar_paciente(name.get(),lastname.get(),celphone.get()))
     search_btn.grid(row=6,column=0,columnspan=2, pady=10,padx=10,ipadx=100)
 
     #insert button
@@ -276,7 +277,9 @@ def Open_Paciente():
 
 
 #Window to show Patient information and his History of reports
-def mostrar_paciente(paciente,reporte):
+def mostrar_paciente(name,lastname,celphone):
+    paciente,reporte = database.select_paciente_query(name,lastname,celphone)
+    
     top = Toplevel()
     top.title('Paciente')
     top.geometry('930x500')
