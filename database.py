@@ -425,3 +425,4 @@ def Open_Inventario():
 if __name__ == "__main__": #main loop
     main_GUI_window()
     
+#some changes bla bla
