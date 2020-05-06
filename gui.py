@@ -3,11 +3,17 @@ import database as DB
 app = Flask(__name__)
 database = DB.Database()
 
+
+@app.route('/')
+def Home():
+    title = "Clinica Quiropractica"
+    return render_template('home.html', title=title)
+
+
 @app.route('/Paciente')
 def Paciente():
     title = "Paciente"
     return render_template('Paciente.html', title=title)
-
 
 
 @app.route('/inventario')
@@ -38,7 +44,7 @@ def ver_paciente():
         celphone=row[4]
         address=row[5]
     print(paciente)
-    return render_template('ver_paciente.html', title=title, paciente=paciente)
+    return render_template('ver_paciente.html', title=title, paciente=paciente, reporte=reporte)
 
 
 

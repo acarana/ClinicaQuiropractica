@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('Paciente')}}">Pacientes</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('Inventario')}}">Inventario </a>
+      </li>
+    </ul>
+  
+  </div>
+{% endblock %}
+
+{% block content %}
+    
+    <div class="container">
+        <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                  <img src="images/yoga_sun.jpg" class="d-block w-100" alt="yoga_sun">
+              </div>
+              <div class="carousel-item">
+                <img src="images/back_pain.jpg" class="d-block w-100" alt="back_pain">
+              </div>
+              <div class="carousel-item">
+                <img src="images/chiropractor.jpg" class="d-block w-100" alt="chiropractor">
+              </div>
+            </div>
+          </div>
+     
+    </div>
+
+{% endblock %}
