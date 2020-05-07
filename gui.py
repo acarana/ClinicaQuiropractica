@@ -31,20 +31,24 @@ def ver_paciente():
     celphone= request.form.get("inputcelphone")
     birthdate= request.form.get("inputbirthdate")
     address= request.form.get("inputaddress")
-    paciente,reporte = database.select_paciente_query(firstname,lastname,celphone)
+    
+    if "search" in request.form:
+        paciente,reporte = database.select_paciente_query(firstname,lastname,celphone)
+        if  not paciente:
+            error_statement = "Ese paciente no existe..."
+            return render_template('Paciente.html', error_statement=error_statement)
 
-    if  not paciente or not reporte:
-        error_statement = "Ese paciente no existe..."
-        return render_template('Paciente.html', error_statement=error_statement)
+        print(paciente)
+        return render_template('ver_paciente.html', title=title, paciente=paciente, reporte=reporte)
 
-    for row in paciente:
-        firstname=row[1]
-        lastname=row[2]
-        birthdate=row[3]
-        celphone=row[4]
-        address=row[5]
-    print(paciente)
-    return render_template('ver_paciente.html', title=title, paciente=paciente, reporte=reporte)
+    elif "insert" in request.form:
+        validate = database.insert_paciente_query(firstname,lastname,birthdate,celphone,address)
+        if validate == False:
+            error_statement = "Error insertando paciente..."
+            return render_template('Paciente.html', error_statement=error_statement)
+
+        return render_template('ver_paciente.html', title=title)
+        
 
 
 
