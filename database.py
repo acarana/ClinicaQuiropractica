@@ -71,9 +71,11 @@ class Database:
                     print("telefono  = ", row[4])
                     print("direccion = ", row[5], "\n")
 
-        print(Patient)
-        reportes = self.select_reporte_query()
-        return paciente,reportes
+            print(Patient)
+            return paciente
+
+        
+        
     
 
     def select_reporte_query(self): #SELECT all reports from a specific patient
@@ -92,8 +94,9 @@ class Database:
                 print('reporte_id = ', row[0])
                 print('fecha_creado = ', row[1])
                 print('nota = ', row[2], '\n')
+            return reporte
 
-            return reporte  
+             
     
 
     def insert_paciente_query(self,name,lastname,birthdate,celphone,address): #Insert a new patient into database
@@ -114,9 +117,11 @@ class Database:
             self.connection.commit()
             count = self.cursor.rowcount
             print(count, "Paciente insertado exitosamente a tabla de paciente")
+            return True
         except Exception as err:
             self.print_psycopg2_exception(err)
             print('No se pudo insertar al paciente')
+            return False
     
 
     
@@ -192,11 +197,11 @@ class Database:
             self.connection.close()
             print("PostgreSQL connection is closed")
     
-database = Database()
+
 
 
 #GUI----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+'''
 #Start of program
 def main_GUI_window():
 
@@ -425,4 +430,4 @@ def Open_Inventario():
 if __name__ == "__main__": #main loop
     main_GUI_window()
     
-#some changes bla bla
+'''

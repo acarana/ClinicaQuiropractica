@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="navbar-nav mr-auto">
+    <li class="nav-item active">
+      <a class="nav-link" href="{{ url_for('Paciente')}}">Pacientes <span class="sr-only">(current)</span></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('Inventario')}}">Inventario</a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="container">
+      {% if error_statement %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{error_statement}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endif %}
+     <br><br><br><br>
+      <form action="/Paciente/ver-paciente" method="POST"> 
+        <div class="form-group">
+          <label for="inputname">Nombre*</label>
+          <input type="text" class="form-control" name="inputname" >
+        </div>
+        <div class="form-group">
+          <label for="inputlastname">Apellido*</label>
+          <input type="text" class="form-control" name="inputlastname">
+        </div>
+        <div class="form-group">
+          <label for="inputcelphone">Telefono*</label>
+          <input type="text" class="form-control" name="inputcelphone" aria-describedby="celphonehelp">
+          <small id="celphonehelp" class="form-text text-muted">Ex. ##########</small>
+        </div>
+        <div class="form-group">
+          <label for="inputbirthdate">Fecha Nacimiento</label>
+          <input type="text" class="form-control" name="inputbirthdate" aria-describedby="datehelp">
+          <small id="datehelp" class="form-text text-muted">YYYY-MM-DD</small>
+        </div>
+        <div class="form-group">
+          <label for="inputaddress">Dirección Fisica</label>
+          <input type="text" class="form-control" name="inputaddress">
+        </div>
+        <button type="submit" class="btn btn-primary" name ="search" value = "search">Buscar</button>
+        <button type="submit" class="btn btn-primary" name ="insert" value = "insert">Insertar</button>
+      </form>
+      
+    </div>
+
+{% endblock %}
