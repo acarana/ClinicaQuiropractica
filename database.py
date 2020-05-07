@@ -72,12 +72,8 @@ class Database:
                     print("direccion = ", row[5], "\n")
 
             print(Patient)
-            reportes =[]
-            reportes = self.select_reporte_query()
-            if(reportes == []):
-                return paciente,[]
-            else:
-                return paciente,reportes
+            return paciente
+
         
         
     
@@ -92,7 +88,6 @@ class Database:
         except Exception as err:
             self.print_psycopg2_exception(err)
             print('No se pudo encontrar los reportes del paciente')
-            return []
         else:
             print("Reporte: ")
             for row in reporte:

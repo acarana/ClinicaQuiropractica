@@ -19,7 +19,8 @@ def Paciente():
 @app.route('/inventario')
 def Inventario():
     title = "Inventario"
-    return render_template('inventario.html', title=title)
+    inventario = database.select_inventario_query()
+    return render_template('inventario.html', title=title, inventario=inventario)
 
 
 
@@ -33,8 +34,10 @@ def ver_paciente():
     address= request.form.get("inputaddress")
     
     if "search" in request.form:
-        paciente,reporte = database.select_paciente_query(firstname,lastname,celphone)
-        if  not paciente:
+        paciente = database.select_paciente_query(firstname,lastname,celphone)
+        if paciente:
+            reporte = database.select_reporte_query()
+        elif  not paciente:
             error_statement = "Ese paciente no existe..."
             return render_template('Paciente.html', error_statement=error_statement)
 
