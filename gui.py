@@ -19,7 +19,17 @@ def Paciente():
 @app.route('/inventario')
 def Inventario():
     title = "Inventario"
+    articulo = request.form.get("article")
+    cantidad = request.form.get("amount")
     inventario = database.select_inventario_query()
+
+    if "add" in request.form:
+        database.modify_inventory_query(articulo,cantidad,'sumar')
+        return render_template('inventario.html', title=title, inventario=inventario)
+    
+    elif "remove" in request.form:
+        database.modify_inventory_query(articulo,cantidad,'restar')
+        return render_template('inventario.html', title=title, inventario=inventario)
     return render_template('inventario.html', title=title, inventario=inventario)
 
 
@@ -41,7 +51,6 @@ def ver_paciente():
             error_statement = "Ese paciente no existe..."
             return render_template('Paciente.html', error_statement=error_statement)
 
-        print(paciente)
         return render_template('ver_paciente.html', title=title, paciente=paciente, reporte=reporte)
 
     elif "insert" in request.form:
@@ -50,7 +59,7 @@ def ver_paciente():
             error_statement = "Error insertando paciente..."
             return render_template('Paciente.html', error_statement=error_statement)
 
-        return render_template('ver_paciente.html', title=title)
+        return render_template('Paciente.html', title=title)
         
 
 
