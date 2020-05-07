@@ -48,9 +48,9 @@ class Database:
 
     def select_paciente_query(self, name, lastname,celphone):
 
-        Patient['name'] = name
-        Patient['lastname'] = lastname
-        Patient['celphone'] = celphone
+        Patient['name'] = str(name.strip())
+        Patient['lastname'] = str(lastname.strip())
+        Patient['celphone'] = str(celphone.strip())
 
         select_id_Query = """SELECT *
                             FROM paciente
@@ -101,11 +101,11 @@ class Database:
 
     def insert_paciente_query(self,name,lastname,birthdate,celphone,address): #Insert a new patient into database
    
-        Patient['name'] = name
-        Patient['lastname'] = lastname
-        Patient['celphone'] = celphone
-        Patient['birthdate'] = birthdate
-        Patient['address'] = address
+        Patient['name'] = str(name.strip())
+        Patient['lastname'] = str(lastname.strip())
+        Patient['celphone'] = str(celphone.strip())
+        Patient['birthdate'] = str(birthdate.strip())
+        Patient['address'] = str(address.strip())
         print(Patient)
 
         Insert_Paciente_Query = """INSERT INTO paciente(nombre,apellido,fecha_nacimiento,telefono,direccion)

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="{{ url_for('Paciente')}}">Pacientes <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('Inventario')}}">Inventario</a>
+      </li>
+    </ul>
+  
+  </div>
+{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <br><br><br>
+        <form action="/Paciente/ver-paciente/crear-reporte" method="POST">
+            <div class="form-group">
+              <label for="nota"><h1>Reporte</h1></label>
+              <textarea type="text" class="form-control" name="nota" rows="5"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" name ="save" value = "save">Guardar</button>
+          </form>
+    </div>
+
+{% endblock %}

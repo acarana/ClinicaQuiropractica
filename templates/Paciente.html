@@ -26,30 +26,33 @@
         </button>
       </div>
       {% endif %}
-     <br><br><br><br>
+     <br><br><br><br><br><br><br><br><br><br><br>
       <form action="/Paciente/ver-paciente" method="POST"> 
-        <div class="form-group">
+        <div class="form-row">
+        <div class="form-group col-md-4">
           <label for="inputname">Nombre*</label>
           <input type="text" class="form-control" name="inputname" >
         </div>
-        <div class="form-group">
+        <div class="form-group col-md-4">
           <label for="inputlastname">Apellido*</label>
           <input type="text" class="form-control" name="inputlastname">
         </div>
-        <div class="form-group">
+        <div class="form-group col-md-4">
           <label for="inputcelphone">Telefono*</label>
-          <input type="text" class="form-control" name="inputcelphone" aria-describedby="celphonehelp">
-          <small id="celphonehelp" class="form-text text-muted">Ex. ##########</small>
+          <input type="text" class="form-control" placeholder="7875555555" name="inputcelphone" aria-describedby="celphonehelp">
         </div>
-        <div class="form-group">
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
           <label for="inputbirthdate">Fecha Nacimiento</label>
-          <input type="text" class="form-control" name="inputbirthdate" aria-describedby="datehelp">
-          <small id="datehelp" class="form-text text-muted">YYYY-MM-DD</small>
+          <input type="text" class="form-control" placeholder="YYYY-MM-DD" name="inputbirthdate" aria-describedby="datehelp">
         </div>
-        <div class="form-group">
+        <div class="form-group col-md-8">
           <label for="inputaddress">Dirección Fisica</label>
           <input type="text" class="form-control" name="inputaddress">
         </div>
+      </div>
+        
         <button type="submit" class="btn btn-primary" name ="search" value = "search">Buscar</button>
         <button type="submit" class="btn btn-primary" name ="insert" value = "insert">Insertar</button>
       </form>

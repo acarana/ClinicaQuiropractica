@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for, redirect
 import database as DB
 app = Flask(__name__)
 database = DB.Database()
@@ -16,7 +16,7 @@ def Paciente():
     return render_template('Paciente.html', title=title)
 
 
-@app.route('/inventario')
+@app.route('/inventario', methods=["POST", "GET"])
 def Inventario():
     title = "Inventario"
     articulo = request.form.get("article")
@@ -25,10 +25,12 @@ def Inventario():
 
     if "add" in request.form:
         database.modify_inventory_query(articulo,cantidad,'sumar')
-        return render_template('inventario.html', title=title, inventario=inventario)
+        return redirect(url_for('Inventario'))
+        return render_template('inventario.html', title=title, inventario=inventario)  
     
     elif "remove" in request.form:
         database.modify_inventory_query(articulo,cantidad,'restar')
+        return redirect(url_for('Inventario'))
         return render_template('inventario.html', title=title, inventario=inventario)
     return render_template('inventario.html', title=title, inventario=inventario)
 
@@ -46,12 +48,12 @@ def ver_paciente():
     if "search" in request.form:
         paciente = database.select_paciente_query(firstname,lastname,celphone)
         if paciente:
-            reporte = database.select_reporte_query()
+            reportes = database.select_reporte_query()
         elif  not paciente:
             error_statement = "Ese paciente no existe..."
             return render_template('Paciente.html', error_statement=error_statement)
 
-        return render_template('ver_paciente.html', title=title, paciente=paciente, reporte=reporte)
+        return render_template('ver_paciente.html', title=title, paciente=paciente, reportes=reportes)
 
     elif "insert" in request.form:
         validate = database.insert_paciente_query(firstname,lastname,birthdate,celphone,address)
@@ -60,7 +62,17 @@ def ver_paciente():
             return render_template('Paciente.html', error_statement=error_statement)
 
         return render_template('Paciente.html', title=title)
-        
+
+@app.route('/Paciente/ver-paciente/crear-reporte', methods=["GET", "POST"])
+def Reporte():
+    title = "Crear Reporte"
+    reporte = request.form.get("nota")
+    if "save" in request.form:
+        print(reporte)
+        database.insertar_reportes_query(reporte)
+        return redirect(url_for('Inventario'))
+    
+    return render_template('reporte.html', title=title)   
 
 
 
