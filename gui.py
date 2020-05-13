@@ -67,9 +67,20 @@ def ver_paciente():
 def Reporte():
     title = "Crear Reporte"
     reporte = request.form.get("nota")
+    inventario_usado = request.form.getlist("mycheckbox")
     if "save" in request.form:
         print(reporte)
         database.insertar_reportes_query(reporte)
+
+        if "1" in inventario_usado:
+            database.modify_inventory_query("Tape Bandas","1",'restar')
+        if "2" in inventario_usado:
+            database.modify_inventory_query("Desinfectantes","1",'restar')
+        if "3" in inventario_usado:
+            database.modify_inventory_query("Facepapers","1",'restar')
+        if "4" in inventario_usado:
+            database.modify_inventory_query("Biofreeze","1",'restar')
+
         return redirect(url_for('Inventario'))
     
     return render_template('reporte.html', title=title)   

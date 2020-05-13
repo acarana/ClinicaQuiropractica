@@ -24,8 +24,26 @@
               <textarea type="text" class="form-control" name="nota" rows="5"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary" name ="save" value = "save">Guardar</button>
-          </form>
+            <br><br>
+          <div class="btn-group-toggle" data-toggle="buttons">
+            <h1>Inventario usado</h1>
+            <br>
+            <label class="btn btn-secondary active">
+              <input type="checkbox" name="mycheckbox" value="1" checked autocomplete="off"> Tape Bandas
+            </label>
+            <label class="btn btn-secondary active">
+              <input type="checkbox" name="mycheckbox" value="2" checked autocomplete="off"> Desinfectantes
+            </label>
+            <label class="btn btn-secondary active">
+              <input type="checkbox" name="mycheckbox" value="3" checked autocomplete="off"> Facepapers
+            </label>
+            <label class="btn btn-secondary active">
+              <input type="checkbox" name="mycheckbox" value="4" checked autocomplete="off"> Biofreeze
+            </label>
+          </div>
+          <br><br>
+          <button type="submit" class="btn btn-primary" name ="save" value = "save">Guardar</button>
+          </form>  
     </div>
 
 {% endblock %}
