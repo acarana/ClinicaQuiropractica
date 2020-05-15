@@ -41,7 +41,54 @@
          {% endfor %}
         </tbody>
      </table>
-     
+     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Editar</button>
+
+     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Editar Paciente</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            {% for item in paciente %}
+            <form action="{{url_for('ver_paciente')}}" method="POST" id="form1"> 
+              <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="inputname">Nombre*</label>
+                <input type="text" class="form-control" value="{{item[1]}}" name="inputname" >
+              </div>
+              <div class="form-group col-md-4">
+                <label for="inputlastname">Apellido*</label>
+                <input type="text" class="form-control" value="{{item[2]}}" name="inputlastname">
+              </div>
+              <div class="form-group col-md-4">
+                <label for="inputcelphone">Telefono*</label>
+                <input type="text" class="form-control" value="{{item[4]}}" name="inputcelphone" aria-describedby="celphonehelp">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="inputbirthdate">Fecha Nacimiento</label>
+                <input type="text" class="form-control" value="{{item[3]}}" name="inputbirthdate" aria-describedby="datehelp">
+              </div>
+              <div class="form-group col-md-8">
+                <label for="inputaddress">Dirección Fisica</label>
+                <input type="text" class="form-control" value="{{item[5]}}" name="inputaddress">
+              </div>
+            </div>
+            </form>
+            {% endfor %}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary" form="form1" name="edit" value="edit">Guardar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
      <br><br><br><br>
      <h1>Reportes</h1>
      <table class="table">
