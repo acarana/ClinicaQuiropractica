@@ -62,6 +62,18 @@ def ver_paciente():
             return render_template('Paciente.html', error_statement=error_statement)
 
         return render_template('Paciente.html', title=title)
+    
+    if "edit" in request.form:
+        database.edit_paciente_query(firstname,lastname,birthdate,celphone,address)
+        paciente = database.select_paciente_query(firstname,lastname,celphone)
+        if paciente:
+            reportes = database.select_reporte_query()
+        
+        return render_template('ver_paciente.html', title=title, paciente=paciente, reportes=reportes)
+    
+
+
+
 
 @app.route('/Paciente/ver-paciente/crear-reporte', methods=["GET", "POST"])
 def Reporte():

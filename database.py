@@ -189,6 +189,31 @@ class Database:
                 print('No se pudo añadir al inventario')
             elif(modify=='restar'):
                 print('No se pudo restar al inventario')
+    
+
+    def edit_paciente_query(self,name,lastname,birthdate,celphone,address):
+        Patient['name'] = str(name.strip())
+        Patient['lastname'] = str(lastname.strip())
+        Patient['celphone'] = str(celphone.strip())
+        Patient['birthdate'] = str(birthdate.strip())
+        Patient['address'] = str(address.strip())
+        print(Patient)
+
+        Edit_Paciente_Query = '''UPDATE paciente
+                                 SET nombre = '%s',
+	                             apellido = '%s',
+	                             fecha_nacimiento = '%s',
+	                             telefono = '%s',
+	                             direccion = '%s'
+                                 WHERE paciente_id = %s ''' %(Patient['name'], Patient['lastname'], Patient['birthdate'], Patient['celphone'], Patient['address'], Patient['ID'])
+        try:
+            self.cursor.execute(Edit_Paciente_Query)
+            self.connection.commit()
+            return True
+        except Exception as err:
+            self.print_psycopg2_exception(err)
+            print('Error editando al paciente')
+            return False
 
 
     def __del__(self):
