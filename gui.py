@@ -29,7 +29,10 @@ def Inventario():
         return render_template('inventario.html', title=title, inventario=inventario)  
     
     elif "remove" in request.form:
-        database.modify_inventory_query(articulo,cantidad,'restar')
+        validate = database.modify_inventory_query(articulo,cantidad,'restar')
+        if validate == False:
+            error_statement = "Error quitando del inventario..."
+            return render_template('inventario.html', error_statement=error_statement, title=title, inventario=inventario)
         return redirect(url_for('Inventario'))
         return render_template('inventario.html', title=title, inventario=inventario)
     return render_template('inventario.html', title=title, inventario=inventario)

@@ -183,12 +183,14 @@ class Database:
                 self.cursor.execute(SubToInventory_query)
                 print('%s %s restados al inventario'%(cantidad_sumar,articulo)) 
             self.connection.commit()
+            return True
         except Exception as err:
             self.print_psycopg2_exception(err)
             if(modify == 'sumar'):
                 print('No se pudo añadir al inventario')
             elif(modify=='restar'):
                 print('No se pudo restar al inventario')
+            return False
     
 
     def edit_paciente_query(self,name,lastname,birthdate,celphone,address):
