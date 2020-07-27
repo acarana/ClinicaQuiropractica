@@ -18,7 +18,7 @@ Patient = {
 class Database:
     def __init__(self):
         try:
-            self.connection = psycopg2.connect(user = "postgres", password = "jahesgrande01", host = "localhost", port = "5432", database = "Clinica")
+            self.connection = psycopg2.connect(user = "postgres", password = "postgresql", host = "localhost", port = "5432", database = "Clinica")
             self.cursor = self.connection.cursor()
             self.connection.set_session(autocommit=True)
             print(self.connection.get_dsn_parameters(),'\n')
