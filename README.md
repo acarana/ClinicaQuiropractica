@@ -5,6 +5,9 @@ Warning:
 
 Server must be running beforehand
 
+The DB can be imported from the ```Clinica.sql``` file
+
+
 To run: 
 
 ```set FLASK_APP=gui.py```
